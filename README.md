@@ -117,7 +117,7 @@ http://url-to-image/example.jpg?h=100      | auto  | 100px
 http://url-to-image/example.jpg?w=100&=100 | 100px | 100px
 
 ### How to render a sub content
-If you want to render a sub content, use the method "getContentHtml" of the block "FondOf_Contentful_Block_Content_Type_Renderer". 
+If you want to render a sub content, use the method "getContentHtml" of the block "FondOf_Contentful_Block_Content_Type_Renderer_Default". 
 ```
 <?php $content = $this->getContent(); ?>
 <div ...>
