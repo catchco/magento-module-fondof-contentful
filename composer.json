@@ -1,0 +1,39 @@
+{
+  "name": "fondof/magento-module-fondof-contentful",
+  "description": "A Magento Module to integrate Contentful",
+  "type": "magento-module",
+  "license": "proprietary",
+  "require": {
+    "magento-hackathon/magento-composer-installer": "~3.0",
+    "fondof/magento-composer-autoloader": "*",
+    "contentful/contentful": "~2.1.0",
+    "kzykhys/ciconia": "~1.0.0"
+  },
+  "require-dev": {
+    "ecomdev/ecomdev_phpunit": "~0.3",
+    "colinmollenhour/modman": "@stable",
+    "n98/magerun": "~1.97",
+    "phpmd/phpmd": "@stable",
+    "phploc/phploc": "@stable",
+    "pdepend/pdepend": "@stable",
+    "mikey179/vfsStream": "@stable",
+    "squizlabs/php_codesniffer": "@stable"
+  },
+  "authors": [
+    {
+      "name": "Daniel Rose",
+      "email": "daniel-rose@gmx.de"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://packages.firegento.com/"
+    }
+  ],
+  "extra": {
+    "magento-root-dir": "root",
+    "with-bootstrap-patch": false
+  },
+  "minimum-stability": "dev"
+}

@@ -1,0 +1,2 @@
+config:
+  stores/default/fondof_contentful/image/jpeg_quality: 75

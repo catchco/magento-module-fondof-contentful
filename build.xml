@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="FondOf_Contentful" default="full-build" basedir=".">
+    <property name="magento_root_dir" value="${project.basedir}/root"/>
+    <property name="src_dir" value="${project.basedir}/src"/>
+    <property name="vendor_dir" value="${project.basedir}/vendor"/>
+    <property name="build_dir" value="${project.basedir}/build"/>
+
+    <property name="pdepend" value="${vendor_dir}/bin/pdepend"/>
+    <property name="phpcpd" value="${vendor_dir}/bin/phpcpd"/>
+    <property name="phpcs" value="${vendor_dir}/bin/phpcs"/>
+    <property name="phploc" value="${vendor_dir}/bin/phploc"/>
+    <property name="phpmd" value="${vendor_dir}/bin/phpmd"/>
+    <property name="phpunit" value="${vendor_dir}/bin/phpunit"/>
+    <property name="mysql-cli" value="mysql"/>
+    <property name="n98-magerun" value="${vendor_dir}/bin/n98-magerun"/>
+    <property name="modman" value="${vendor_dir}/bin/modman"/>
+    <property name="composer" value="composer"/>
+
+    <property environment="env"/>
+    <condition property="magento_version" value="${env.MAGENTO_VERSION}">
+        <isset property="env.MAGENTO_VERSION"/>
+    </condition>
+    <property name="magento_version" value="1.9.2.3"/>
+
+    <property name="magento_unsecure_base_url" value="http://example.com"/>
+    <property name="magento_secure_base_url" value="https://example.com"/>
+
+    <property name="magento_db_user" value="magento_test"/>
+    <property name="magento_db_password" value="magento_test"/>
+    <property name="magento_db_name" value="magento_test"/>
+    <property name="magento_db_host" value="localhost"/>
+
+    <target name="full-build"
+            depends="prepare,static-analysis,phpunit,-check-failure"
+            description="Performs static analysis, runs the tests, and generates project documentation"/>
+
+    <target name="full-build-parallel"
+            depends="prepare,static-analysis-parallel,phpunit,-check-failure"
+            description="Performs static analysis (executing the tools in parallel), runs the tests, and generates project documentation"/>
+
+    <target name="quick-build"
+            depends="prepare,lint,phpunit-no-coverage"
+            description="Performs a lint check and runs the tests (without generating code coverage reports)"/>
+
+    <target name="static-analysis"
+            depends="lint,phploc-ci,pdepend,phpmd-ci,phpcs-ci,phpcpd-ci"
+            description="Performs static analysis"/>
+
+    <target name="static-analysis-parallel"
+            description="Performs static analysis (executing the tools in parallel)">
+        <parallel threadCount="2">
+            <sequential>
+                <phingcall target="pdepend"/>
+                <phingcall target="phpmd-ci"/>
+            </sequential>
+            <phingcall target="lint"/>
+            <phingcall target="phpcpd-ci"/>
+            <phingcall target="phpcs-ci"/>
+            <phingcall target="phploc-ci"/>
+        </parallel>
+    </target>
+
+    <target name="clean" unless="clean.done" description="Cleanup build artifacts">
+        <delete dir="${build_dir}/coverage"/>
+        <delete dir="${build_dir}/logs"/>
+        <delete dir="${build_dir}/pdepend"/>
+
+        <delete dir="${magento_root_dir}"/>
+
+        <delete file="composer.lock"/>
+        <delete dir="${vendor_dir}"/>
+
+        <exec executable="${mysql-cli}">
+            <arg value="-u"/>
+            <arg value="root"/>
+            <arg value="-e"/>
+            <arg value="DROP DATABASE IF EXISTS ${magento_db_name}; DROP USER IF EXISTS &apos;${magento_db_user}&apos;@&apos;%&apos;;"/>
+        </exec>
+
+        <property name="clean.done" value="true"/>
+    </target>
+
+    <target name="prepare" unless="prepare.done" depends="clean" description="Prepare for build">
+        <mkdir dir="${build_dir}/coverage"/>
+        <mkdir dir="${build_dir}/logs"/>
+        <mkdir dir="${build_dir}/pdepend"/>
+        <mkdir dir="${magento_root_dir}"/>
+
+        <exec executable="${mysql-cli}">
+            <arg value="-u"/>
+            <arg value="root"/>
+            <arg value="-e"/>
+            <arg value="CREATE DATABASE ${magento_db_name} CHARACTER SET utf8; GRANT ALL ON ${magento_db_name}.* TO &apos;${magento_db_user}&apos;@&apos;%&apos; IDENTIFIED BY &apos;${magento_db_password}&apos; WITH GRANT OPTION;"/>
+        </exec>
+
+        <exec executable="git">
+            <arg value="clone"/>
+            <arg value="https://github.com/OpenMage/magento-mirror.git"/>
+            <arg value="${magento_root_dir}"/>
+        </exec>
+
+        <exec executable="git">
+            <arg value="checkout"/>
+            <arg value="tag/${magento_version}"/>
+        </exec>
+
+        <delete dir="${magento_root_dir}/.git"/>
+        <delete file="${magento_root_dir}/composer.json"/>
+
+        <exec dir="${magento_root_dir}"
+              command="php install.php --license_agreement_accepted &quot;yes&quot; --locale &quot;de_DE&quot; --timezone &quot;Euopre/Berlin&quot; --default_currency &quot;EUR&quot; --db_host &quot;${magento_db_host}&quot; --db_name &quot;${magento_db_name}&quot; --db_user &quot;${magento_db_user}&quot; --db_pass &quot;${magento_db_password}&quot; --url &quot;${magento_unsecure_base_url}&quot; --skip_url_validation &quot;yes&quot; --use_rewrites &quot;yes&quot; --use_secure &quot;yes&quot; --secure_base_url &quot;${magento_secure_base_url}&quot; --use_secure_admin &quot;yes&quot; --admin_lastname Owner --admin_firstname Store --admin_email &quot;admin@example.com&quot; --admin_username &quot;admin&quot; --admin_password &quot;test123&quot;"/>
+
+        <exec executable="${composer}">
+            <arg value="install"/>
+            <arg value="--no-interaction"/>
+        </exec>
+
+        <exec executable="${n98-magerun}" dir="${magento_root_dir}">
+            <arg value="cache:disable"/>
+        </exec>
+
+        <exec executable="${n98-magerun}" dir="${magento_root_dir}">
+            <arg value="cache:clean"/>
+        </exec>
+
+        <exec executable="${n98-magerun}" dir="${magento_root_dir}">
+            <arg value="dev:symlinks --on"/>
+        </exec>
+
+        <exec executable="${modman}" dir="${magento_root_dir}">
+            <arg value="init"/>
+        </exec>
+
+        <exec executable="${modman}" dir="${magento_root_dir}">
+            <arg value="link"/>
+            <arg value="${project.basedir}"/>
+        </exec>
+
+        <exec executable="php" dir="${magento_root_dir}/shell">
+            <arg value="ecomdev-phpunit.php"/>
+            <arg value="-a"/>
+            <arg value="install"/>
+        </exec>
+
+        <exec executable="php" dir="${magento_root_dir}/shell">
+            <arg value="ecomdev-phpunit.php"/>
+            <arg value="-a"/>
+            <arg value="magento-config"/>
+            <arg value="--db-name"/>
+            <arg value="${magento_db_name}"/>
+            <arg value="--base-url"/>
+            <arg value="http://127.0.0.1/"/>
+            <arg value="--same-db"/>
+            <arg value="true"/>
+        </exec>
+
+        <xslt style="${phing.dir}/phpunit.xsl" tofile="${magento_root_dir}/phpunit.xml.dist.new"
+              file="${magento_root_dir}/phpunit.xml.dist"/>
+        <move file="${magento_root_dir}/phpunit.xml.dist" tofile="${magento_root_dir}/phpunit.xml.dist.old"
+              overwrite="true"/>
+        <move file="${magento_root_dir}/phpunit.xml.dist.new" tofile="${magento_root_dir}/phpunit.xml.dist"
+              overwrite="true"/>
+
+        <property name="prepare.done" value="true"/>
+    </target>
+
+    <target name="lint" unless="lint.done" description="Perform syntax check of sourcecode files">
+        <apply executable="php" checkreturn="true">
+            <arg value="-l"/>
+
+            <fileset dir="${src_dir}">
+                <include name="**/*.php"/>
+            </fileset>
+        </apply>
+
+        <property name="lint.done" value="true"/>
+    </target>
+
+    <target name="phploc" unless="phploc.done"
+            description="Measure project size using PHPLOC and print human readable output. Intended for usage on the command line.">
+        <exec executable="${phploc}">
+            <arg value="--count-tests"/>
+            <arg path="${src_dir}"/>
+        </exec>
+
+        <property name="phploc.done" value="true"/>
+    </target>
+
+    <target name="phploc-ci" unless="phploc.done" depends="prepare"
+            description="Measure project size using PHPLOC and log result in CSV and XML format. Intended for usage within a continuous integration environment.">
+        <exec executable="${phploc}">
+            <arg value="--count-tests"/>
+            <arg value="--log-csv"/>
+            <arg path="${build_dir}/logs/phploc.csv"/>
+            <arg value="--log-xml"/>
+            <arg path="${build_dir}/logs/phploc.xml"/>
+            <arg path="${src_dir}"/>
+        </exec>
+
+        <property name="phploc.done" value="true"/>
+    </target>
+
+    <target name="pdepend" unless="pdepend.done" depends="prepare"
+            description="Calculate software metrics using PHP_Depend and log result in XML format. Intended for usage within a continuous integration environment.">
+        <exec executable="${pdepend}">
+            <arg value="--jdepend-xml=${build_dir}/logs/jdepend.xml"/>
+            <arg value="--jdepend-chart=${build_dir}/pdepend/dependencies.svg"/>
+            <arg value="--overview-pyramid=${build_dir}/pdepend/overview-pyramid.svg"/>
+            <arg path="${src_dir}"/>
+        </exec>
+
+        <property name="pdepend.done" value="true"/>
+    </target>
+
+    <target name="phpmd" unless="phpmd.done"
+            description="Perform project mess detection using PHPMD and print human readable output. Intended for usage on the command line before committing.">
+        <exec executable="${phpmd}">
+            <arg path="${src_dir}"/>
+            <arg value="text"/>
+            <arg path="${build_dir}/phpmd.xml"/>
+        </exec>
+
+        <property name="phpmd.done" value="true"/>
+    </target>
+
+    <target name="phpmd-ci" unless="phpmd.done" depends="prepare"
+            description="Perform project mess detection using PHPMD and log result in XML format. Intended for usage within a continuous integration environment.">
+        <exec executable="${phpmd}">
+            <arg path="${src_dir}"/>
+            <arg value="xml"/>
+            <arg path="${build_dir}/phpmd.xml"/>
+            <arg value="--reportfile"/>
+            <arg path="${build_dir}/logs/pmd.xml"/>
+        </exec>
+
+        <property name="phpmd.done" value="true"/>
+    </target>
+
+    <target name="phpcs" unless="phpcs.done"
+            description="Find coding standard violations using PHP_CodeSniffer and print human readable output. Intended for usage on the command line before committing.">
+        <exec executable="${phpcs}">
+            <arg value="--standard=PSR2"/>
+            <arg value="--extensions=php"/>
+            <arg path="${src_dir}"/>
+        </exec>
+
+        <property name="phpcs.done" value="true"/>
+    </target>
+
+    <target name="phpcs-ci" unless="phpcs.done" depends="prepare"
+            description="Find coding standard violations using PHP_CodeSniffer and log result in XML format. Intended for usage within a continuous integration environment.">
+        <exec executable="${phpcs}" output="/dev/null">
+            <arg value="--report=checkstyle"/>
+            <arg value="--report-file=${build_dir}/logs/checkstyle.xml"/>
+            <arg value="--standard=PSR2"/>
+            <arg value="--extensions=php"/>
+            <arg value="--ignore=autoload.php"/>
+            <arg path="${src_dir}"/>
+        </exec>
+
+        <property name="phpcs.done" value="true"/>
+    </target>
+
+    <target name="phpcpd" unless="phpcpd.done"
+            description="Find duplicate code using PHPCPD and print human readable output. Intended for usage on the command line before committing.">
+        <exec executable="${phpcpd}">
+            <arg path="${src_dir}"/>
+        </exec>
+
+        <property name="phpcpd.done" value="true"/>
+    </target>
+
+    <target name="phpcpd-ci" unless="phpcpd.done" depends="prepare"
+            description="Find duplicate code using PHPCPD and log result in XML format. Intended for usage within a continuous integration environment.">
+        <exec executable="${phpcpd}">
+            <arg value="--log-pmd"/>
+            <arg path="${build_dir}/logs/pmd-cpd.xml"/>
+            <arg path="${src_dir}"/>
+        </exec>
+
+        <property name="phpcpd.done" value="true"/>
+    </target>
+
+    <target name="phpunit" unless="phpunit.done" description="Run unit tests with PHPUnit">
+        <exec executable="${phpunit}" returnProperty="result.phpunit" dir="${magento_root_dir}">
+            <arg value="--configuration"/>
+            <arg path="${magento_root_dir}/phpunit.xml.dist"/>
+            <arg value="--coverage-html"/>
+            <arg path="${build_dir}/coverage/"/>
+            <arg value="--coverage-clover"/>
+            <arg path="${build_dir}/logs/clover.xml"/>
+            <arg value="--coverage-crap4j"/>
+            <arg path="${build_dir}/logs/crap4j.xml"/>
+            <arg value="--log-junit"/>
+            <arg path="${build_dir}/logs/junit.xml"/>
+            <arg value="--group"/>
+            <arg value="${phing.project.name}"/>
+        </exec>
+
+        <property name="phpunit.done" value="true"/>
+    </target>
+
+    <target name="phpunit-no-coverage" unless="phpunit.done" depends="prepare"
+            description="Run unit tests with PHPUnit (without generating code coverage reports)">
+        <exec executable="${phpunit}" checkreturn="true" dir="${magento_root_dir}">
+            <arg value="--configuration"/>
+            <arg path="${magento_root_dir}/phpunit.xml.dist"/>
+            <arg value="--no-coverage"/>
+            <arg value="--group"/>
+            <arg value="${phing.project.name}"/>
+        </exec>
+
+        <property name="phpunit.done" value="true"/>
+    </target>
+
+    <target name="-check-failure">
+        <if>
+            <isfailure code="${result.phpunit}"/>
+            <then>
+                <fail message="PHPUnit did not finish successfully"/>
+            </then>
+        </if>
+    </target>
+</project>

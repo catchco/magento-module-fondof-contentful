@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <modules>
+        <FondOf_Contentful>
+            <active>true</active>
+            <codePool>community</codePool>
+            <depends>
+                <Mage_Core/>
+                <Mage_Catalog/>
+            </depends>
+        </FondOf_Contentful>
+    </modules>
+</config>

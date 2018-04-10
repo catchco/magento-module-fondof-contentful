@@ -1,0 +1,2 @@
+config:
+  stores/default/fondof_contentful/image/max_width: 1000

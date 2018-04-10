@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <modules>
+        <FondOf_Contentful>
+            <version>1.1.0</version>
+        </FondOf_Contentful>
+    </modules>
+
+    <admin>
+        <routers>
+            <adminhtml>
+                <args>
+                    <modules>
+                        <fondof_contentful before="Mage_Adminhtml">FondOf_Contentful_Adminhtml</fondof_contentful>
+                    </modules>
+                </args>
+            </adminhtml>
+        </routers>
+    </admin>
+
+    <default>
+        <fondof_contentful>
+            <general>
+                <locale>en-US</locale>
+            </general>
+            <image>
+                <max_width>2000</max_width>
+                <jpeg_quality>75</jpeg_quality>
+            </image>
+        </fondof_contentful>
+    </default>
+
+    <frontend>
+        <routers>
+            <fondof_contentful>
+                <use>standard</use>
+                <args>
+                    <frontName>fondof_contentful</frontName>
+                    <modules>
+                        <fondof_contentful>FondOf_Contentful</fondof_contentful>
+                    </modules>
+                </args>
+            </fondof_contentful>
+        </routers>
+        <layout>
+            <updates>
+                <fondof_contentful>
+                    <file>fondof_contentful.xml</file>
+                </fondof_contentful>
+            </updates>
+        </layout>
+    </frontend>
+
+    <global>
+        <blocks>
+            <fondof_contentful>
+                <class>FondOf_Contentful_Block</class>
+            </fondof_contentful>
+        </blocks>
+
+        <cache>
+            <types>
+                <fondof_contentful_html translate="label,description" module="fondof_contentful">
+                    <label>Contentful HTML output</label>
+                    <description>HTML output of content types.</description>
+                    <tags>FONDOF_CONTENTFUL_HTML</tags>
+                </fondof_contentful_html>
+
+                <fondof_contentful_api_results translate="label,description" module="fondof_contentful">
+                    <label>Contentful API results</label>
+                    <description>Result of an API call.</description>
+                    <tags>FONDOF_CONTENTFUL_API_RESULTS</tags>
+                </fondof_contentful_api_results>
+            </types>
+        </cache>
+
+        <events>
+            <controller_front_init_routers>
+                <observers>
+                    <fondof_contentful>
+                        <class>FondOf_Contentful_Controller_Router</class>
+                        <method>initControllerRouters</method>
+                    </fondof_contentful>
+                </observers>
+            </controller_front_init_routers>
+        </events>
+
+        <fondof_contentful>
+            <callback>
+                <handlers>
+                    <page>fondof_contentful/callback_handler_page</page>
+                    <cache>fondof_contentful/callback_handler_cache</cache>
+                </handlers>
+            </callback>
+        </fondof_contentful>
+
+        <helpers>
+            <fondof_contentful>
+                <class>FondOf_Contentful_Helper</class>
+            </fondof_contentful>
+        </helpers>
+
+        <models>
+            <fondof_contentful>
+                <class>FondOf_Contentful_Model</class>
+                <resourceModel>fondof_contentful_resource</resourceModel>
+            </fondof_contentful>
+
+            <fondof_contentful_resource>
+                <class>FondOf_Contentful_Model_Resource</class>
+                <entities>
+                    <mapping>
+                        <table>fondof_contentful_mapping</table>
+                    </mapping>
+                </entities>
+            </fondof_contentful_resource>
+        </models>
+
+        <resources>
+            <fondof_contentful_setup>
+                <setup>
+                    <module>FondOf_Contentful</module>
+                </setup>
+            </fondof_contentful_setup>
+        </resources>
+    </global>
+
+    <phpunit>
+        <suite>
+            <modules>
+                <FondOf_Contentful/>
+            </modules>
+        </suite>
+    </phpunit>
+</config>

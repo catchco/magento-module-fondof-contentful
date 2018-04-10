@@ -1,0 +1,15 @@
+<?php
+    /** @var FondOf_Contentful_Block_Navigation_Item_Renderer_Abstract $this */
+    /** @var array $renderedChildren */
+    $renderedChildren = $this->getRenderedChildren();
+?>
+<li>
+    <a href="<?php echo $this->getHref() ?>"><?php echo $this->getLinkText() ?></a>
+    <?php if (count($renderedChildren) != 0): ?>
+    <ul>
+        <?php foreach ($renderedChildren as $renderedChild): ?>
+            <?php echo $renderedChild; ?>
+        <?php endforeach; ?>
+    </ul>
+    <?php endif; ?>
+</li>

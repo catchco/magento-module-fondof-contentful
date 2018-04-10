@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layout version="0.1.0">
+    <default>
+        <block type="fondof_contentful/content_type_renderers" name="fondof_contentful_content_type_renderers">
+            <action method="addContentTypeRenderer">
+                <contentType>navigation</contentType>
+                <blockType>fondof_contentful/content_type_renderer_navigation</blockType>
+                <template>fondof/contentful/navigation.phtml</template>
+            </action>
+        </block>
+
+        <block type="fondof_contentful/navigation_item_renderers" name="fondof_contentful_navigation_item_renderers">
+            <action method="addNavigationItemRenderer">
+                <navigationItemType>category</navigationItemType>
+                <blockType>fondof_contentful/navigation_item_renderer_category</blockType>
+                <template>fondof/contentful/navigation/item/default.phtml</template>
+            </action>
+            <action method="addNavigationItemRenderer">
+                <navigationItemType>custom</navigationItemType>
+                <blockType>fondof_contentful/navigation_item_renderer_custom</blockType>
+                <template>fondof/contentful/navigation/item/default.phtml</template>
+            </action>
+            <action method="addNavigationItemRenderer">
+                <navigationItemType>page</navigationItemType>
+                <blockType>fondof_contentful/navigation_item_renderer_page</blockType>
+                <template>fondof/contentful/navigation/item/default.phtml</template>
+            </action>
+            <action method="addNavigationItemRenderer">
+                <navigationItemType>fallbackPage</navigationItemType>
+                <blockType>fondof_contentful/navigation_item_renderer_page_fallback</blockType>
+                <template>fondof/contentful/navigation/item/default.phtml</template>
+            </action>
+            <action method="addNavigationItemRenderer">
+                <navigationItemType>product</navigationItemType>
+                <blockType>fondof_contentful/navigation_item_renderer_product</blockType>
+                <template>fondof/contentful/navigation/item/default.phtml</template>
+            </action>
+        </block>
+    </default>
+
+    <fondof_contentful_page_view>
+        <label>FondOf Contentful Page</label>
+        <reference name="content">
+            <block type="fondof_contentful/page" name="fondof_contentful_page"/>
+        </reference>
+    </fondof_contentful_page_view>
+
+    <fondof_contentful_index_index translate="label">
+        <label>FondOf Contentful Home Page</label>
+        <reference name="content">
+            <block type="fondof_contentful/page" name="fondof_contentful_page"/>
+        </reference>
+    </fondof_contentful_index_index>
+</layout>

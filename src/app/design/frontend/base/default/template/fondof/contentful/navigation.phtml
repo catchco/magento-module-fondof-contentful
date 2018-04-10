@@ -1,0 +1,13 @@
+<?php
+/** @var FondOf_Contentful_Block_Content_Type_Renderer_Navigation $this */
+/** @var Varien_Object $content */
+$content = $this->getContent();
+$items = $content->getData('items');
+?>
+<?php if ($items && count($items) > 0): ?>
+    <ul>
+        <?php foreach ($items as $item): ?>
+            <?php echo $this->getItemHtml($item) ?>
+        <?php endforeach; ?>
+    </ul>
+<?php endif; ?>

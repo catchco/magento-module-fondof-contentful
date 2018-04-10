@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config>
+    <menu>
+        <contentful translate="title" module="fondof_contentful">
+            <title>Contentful</title>
+            <sort_order>999</sort_order>
+            <children>
+                <mapping translate="title" module="fondof_contentful">
+                    <title>Mappings</title>
+                    <action>adminhtml/fondof_contentful_mapping</action>
+                    <sort_order>0</sort_order>
+                </mapping>
+            </children>
+        </contentful>
+    </menu>
+    <acl>
+        <resources>
+            <admin>
+                <children>
+                    <system>
+                        <children>
+                            <config>
+                                <children>
+                                    <fondof_contentful>
+                                        <title>FondOf Contentful</title>
+                                        <sort_order>1000</sort_order>
+                                    </fondof_contentful>
+                                </children>
+                            </config>
+                        </children>
+                    </system>
+                    <contentful>
+                        <title>Contentful</title>
+                        <sort_order>999</sort_order>
+                        <children>
+                            <mapping>
+                                <title>Mappings</title>
+                                <sort_order>0</sort_order>
+                            </mapping>
+                        </children>
+                    </contentful>
+                </children>
+            </admin>
+        </resources>
+    </acl>
+</config>
